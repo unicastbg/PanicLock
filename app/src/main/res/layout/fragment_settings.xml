@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0D1117"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Master toggle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#161B22"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Shake Detection"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <Switch
+                android:id="@+id/switchMaster"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:thumbTint="@color/switch_thumb"
+                android:trackTint="@color/switch_track"/>
+
+        </LinearLayout>
+
+        <!-- Sensitivity -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#161B22"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Sensitivity"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/tvSensitivityValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Medium"
+                    android:textColor="#00D4FF"/>
+
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekBarSensitivity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:max="4"
+                android:progress="2"
+                android:progressTint="#00D4FF"
+                android:thumbTint="#00D4FF"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="High"
+                    android:textColor="#8B949E"
+                    android:textSize="12sp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Low"
+                    android:textColor="#8B949E"
+                    android:textSize="12sp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- On-trigger actions -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ON TRIGGER"
+            android:textColor="#8B949E"
+            android:textSize="12sp"
+            android:letterSpacing="0.1"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#161B22"
+            android:padding="8dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Lock Screen"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"/>
+                <Switch
+                    android:id="@+id/switchLock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Enable Silent Mode"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"/>
+                <Switch
+                    android:id="@+id/switchSilent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Enable GPS"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"/>
+                <Switch
+                    android:id="@+id/switchGps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Enable Mobile Data"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"/>
+                <Switch
+                    android:id="@+id/switchMobileData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Kill Apps on Trigger"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"/>
+                <Switch
+                    android:id="@+id/switchKillApps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"/>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnManageKillList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginHorizontal="8dp"
+                android:text="Manage App Kill List"
+                android:backgroundTint="#0D1117"
+                android:textColor="#00D4FF"/>
+
+        </LinearLayout>
+
+        <!-- Panic Alarm -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="PANIC ALARM"
+            android:textColor="#8B949E"
+            android:textSize="12sp"
+            android:letterSpacing="0.1"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#161B22"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Strobe + Alarm on Trigger"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"/>
+
+                <Switch
+                    android:id="@+id/switchPanicAlarm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutPanicDuration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Duration"
+                    android:textColor="#8B949E"
+                    android:textSize="14sp"/>
+
+                <TextView
+                    android:id="@+id/tvPanicDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="30s"
+                    android:textColor="#00D4FF"
+                    android:layout_marginEnd="8dp"/>
+
+                <SeekBar
+                    android:id="@+id/seekBarPanicDuration"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:max="4"
+                    android:progress="1"
+                    android:progressTint="#00D4FF"
+                    android:thumbTint="#00D4FF"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Notification -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="NOTIFICATION"
+            android:textColor="#8B949E"
+            android:textSize="12sp"
+            android:letterSpacing="0.1"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#161B22"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Hide Notification Icon"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"/>
+
+                <Switch
+                    android:id="@+id/switchHideNotification"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Hides the status bar icon. Notification remains in shade."
+                android:textColor="#3A3F47"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"/>
+
+        </LinearLayout>
+
+        <!-- Battery -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="BATTERY"
+            android:textColor="#8B949E"
+            android:textSize="12sp"
+            android:letterSpacing="0.1"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#161B22"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Stop Service Below"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"/>
+
+                <TextView
+                    android:id="@+id/tvBatteryThreshold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Off"
+                    android:textColor="#00D4FF"
+                    android:layout_marginEnd="8dp"/>
+
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekBarBattery"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:max="6"
+                android:progress="0"
+                android:progressTint="#00D4FF"
+                android:thumbTint="#00D4FF"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Off"
+                    android:textColor="#3A3F47"
+                    android:textSize="12sp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="30%"
+                    android:textColor="#3A3F47"
+                    android:textSize="12sp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Security -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SECURITY"
+            android:textColor="#8B949E"
+            android:textSize="12sp"
+            android:letterSpacing="0.1"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#161B22"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Fake Power Menu"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"/>
+
+                <Switch
+                    android:id="@+id/switchFakePowerMenu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Replaces power menu with a fake one that does nothing."
+                android:textColor="#3A3F47"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"/>
+
+        </LinearLayout>
+
+        <!-- About -->
+        <Button
+            android:id="@+id/btnAbout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="About PanicLock"
+            android:backgroundTint="#161B22"
+            android:textColor="#8B949E"/>
+
+        <!-- Bottom padding -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="32dp"/>
+
+    </LinearLayout>
+
+</ScrollView>

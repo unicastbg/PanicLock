@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" >
+
+
+    <!-- Basic permissions -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- Root actions: GPS, mobile data, silent mode -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <!-- App kill list: query installed apps -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+
+    <application
+        android:allowBackup="true"
+        android:label="PanicLock"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.PanicLock">
+
+        <!-- Main screen -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Background shake detection service -->
+        <service
+            android:name=".LockService"
+            android:foregroundServiceType="specialUse"
+            android:exported="false" />
+
+        <!-- Auto-start on device boot -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <!-- Fake power menu receiver -->
+        <receiver
+            android:name=".PowerMenuReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.CLOSE_SYSTEM_DIALOGS" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Fake power menu overlay service -->
+        <service
+            android:name=".FakePowerMenuService"
+            android:exported="false" />
+
+    </application>
+
+</manifest>
