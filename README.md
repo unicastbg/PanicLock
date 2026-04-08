@@ -10,7 +10,7 @@ A rooted Android security app that instantly locks your device when shaken.
 - Silent mode on trigger
 - Force-stop selected apps on trigger
 - Panic alarm — flashlight strobe + loud alarm sound with configurable duration
-- Fake power menu overlay
+- Fake power menu overlay (may not work with HyperOS, experimental feature)
 - Trigger log — last 10 activations with timestamps and actions fired
 - Battery auto-stop threshold
 - Hide notification icon option
