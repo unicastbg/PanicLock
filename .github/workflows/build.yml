@@ -1,10 +1,10 @@
-name: Build Debug APK
+name: Build and Release Debug APK
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -38,3 +38,22 @@ jobs:
           name: PanicLock-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/debug/app-debug.apk
+          name: PanicLock ${{ github.ref_name }}
+          body: |
+            ## PanicLock ${{ github.ref_name }}
+
+            ### Installation
+            1. Download `app-debug.apk` below
+            2. Enable "Install from unknown sources" on your device
+            3. Install the APK
+            4. Grant root access when prompted
+
+            ### Requirements
+            - Rooted Android device (KernelSU or Magisk)
+            - Android 8.0+
