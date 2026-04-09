@@ -2,6 +2,14 @@
 
 A rooted Android security app that instantly locks your device when shaken.
 
+## Screenshots
+
+<p float="left">
+  <img src="Images/Screenshot_2026-04-09-20-16-15-044_com.security.paniclock.jpg" width="30%" />
+  <img src="Images/Screenshot_2026-04-09-20-16-23-825_com.security.paniclock.jpg" width="30%" />
+  <img src="Images/Screenshot_2026-04-09-20-16-27-999_com.security.paniclock.jpg" width="30%" />
+</p>
+
 ## Features
 
 - Shake detection with adjustable sensitivity (5 levels)
