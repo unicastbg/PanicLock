@@ -1,6 +1,6 @@
 # PanicLock
 
-A rooted Android security app that instantly locks your device when shaken.
+A rooted Android security app that instantly locks your device when shaken — with remote control via Telegram.
 
 ## Screenshots
 
@@ -18,12 +18,39 @@ A rooted Android security app that instantly locks your device when shaken.
 - Silent mode on trigger
 - Force-stop selected apps on trigger
 - Panic alarm — flashlight strobe + loud alarm sound with configurable duration
-- Fake power menu overlay (may not work with HyperOS, experimental feature)
+- Fake power menu overlay
 - Trigger log — last 10 activations with timestamps and actions fired
 - Battery auto-stop threshold
 - Hide notification icon option
 - Auto-starts on device reboot
 - Minimal battery usage (2 samples/sec, sensor unregisters during cooldown)
+
+## Telegram Bot Integration
+
+PanicLock can connect to a Telegram bot for two-way communication:
+
+**Phone → Telegram:**
+- Sends an alert with location and battery level when shake is detected
+- Sends periodic location updates at a configurable interval (1, 2, 5, or 10 minutes)
+
+**Telegram → Phone (remote commands):**
+| Command | Action |
+|---------|--------|
+| `/locate` | Returns current GPS location as a Maps link |
+| `/lock` | Locks the screen remotely |
+| `/alarm` | Triggers the panic alarm (strobe + sound) |
+| `/silent` | Enables silent mode |
+| `/status` | Returns battery %, location, and service status |
+| `/help` | Lists all available commands |
+
+### Telegram Setup
+
+1. Open Telegram → message **@BotFather** → send `/newbot` → follow prompts → copy the token
+2. Start a chat with your new bot and send it any message
+3. Visit `https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates` in a browser
+4. Find `"chat":{"id": YOUR_CHAT_ID}` in the response and copy that number
+5. Open PanicLock → scroll to **Telegram Bot** section → paste token and chat ID
+6. Tap **Test Connection** — you should receive a confirmation message in Telegram
 
 ## Requirements
 
@@ -32,16 +59,17 @@ A rooted Android security app that instantly locks your device when shaken.
 
 ## Installation
 
-1. Clone the repo
-2. Open in Android Studio
-3. Build and install on your rooted device
-4. Grant root access when prompted on first launch
-5. Enable Shake Detection with the master toggle
-6. Configure your preferred trigger actions
+1. Download the latest APK from the [Releases](https://github.com/unicastbg/PanicLock/releases) page
+2. Enable "Install from unknown sources" on your device
+3. Install the APK and grant root access when prompted
+4. Enable Shake Detection with the master toggle
+5. Configure your preferred trigger actions
 
-## Building
+## Building from Source
 
 ```bash
+git clone https://github.com/unicastbg/PanicLock.git
+cd PanicLock
 ./gradlew assembleDebug
 ```
 
@@ -55,6 +83,7 @@ app/src/main/java/com/security/paniclock/
 ├── ShakeDetector.kt         # Accelerometer shake logic
 ├── LockService.kt           # Foreground service, runs in background
 ├── TriggerActions.kt        # All on-trigger actions + log writing
+├── TelegramBot.kt           # Telegram bot — send alerts + receive commands
 ├── BootReceiver.kt          # Auto-start on device reboot
 ├── PowerMenuReceiver.kt     # Fake power menu broadcast receiver
 └── FakePowerMenuService.kt  # Fake power menu overlay
@@ -62,7 +91,7 @@ app/src/main/java/com/security/paniclock/
 
 ## Built With
 
-Kotlin · Android SDK · KernelSU root
+Kotlin · Android SDK · KernelSU root · Telegram Bot API
 
 ## Credits
 

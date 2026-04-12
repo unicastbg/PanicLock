@@ -21,8 +21,21 @@ class LockService : Service() {
     private lateinit var sensorManager: SensorManager
     private lateinit var shakeDetector: ShakeDetector
     private lateinit var triggerActions: TriggerActions
+    private lateinit var telegramBot: TelegramBot
     private val handler = Handler(Looper.getMainLooper())
     private var accelerometer: Sensor? = null
+
+    // Telegram polling — every 30 seconds
+    private val pollIntervalMs = 30_000L
+    private val pollRunnable = object : Runnable {
+        override fun run() {
+            telegramBot.pollCommands(triggerActions)
+            handler.postDelayed(this, pollIntervalMs)
+        }
+    }
+
+    // Periodic location sending
+    private var locationRunnable: Runnable? = null
 
     // Battery receiver
     private val batteryReceiver = object : BroadcastReceiver() {
@@ -43,7 +56,6 @@ class LockService : Service() {
         const val CHANNEL_ID = "PanicLockChannel2"
         const val NOTIFICATION_ID = 1
         const val EXTRA_SENSITIVITY = "sensitivity"
-        // Custom sensor rate: 2 samples per second (500,000 microseconds)
         const val SENSOR_RATE_US = 500000
     }
 
@@ -51,15 +63,13 @@ class LockService : Service() {
         super.onCreate()
         createNotificationChannel()
         triggerActions = TriggerActions(this)
+        telegramBot = TelegramBot(this)
 
         shakeDetector = ShakeDetector {
-            // Unregister sensor during cooldown to save battery
             unregisterSensor()
-            // Run trigger actions on background thread
             Thread {
                 triggerActions.executeAll()
             }.start()
-            // Re-register sensor after cooldown
             handler.postDelayed({
                 shakeDetector.isOnCooldown = false
                 registerSensor()
@@ -71,17 +81,20 @@ class LockService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val prefs = getSharedPreferences(TriggerActions.PREFS_NAME, MODE_PRIVATE)
         val sensitivity = intent?.getFloatExtra(EXTRA_SENSITIVITY, 25f) ?: 25f
         shakeDetector.sensitivityThreshold = sensitivity
 
-        val hideIcon = getSharedPreferences(TriggerActions.PREFS_NAME, MODE_PRIVATE)
-            .getBoolean("hide_notification_icon", false)
-
+        val hideIcon = prefs.getBoolean("hide_notification_icon", false)
         startForeground(NOTIFICATION_ID, buildNotification(hideIcon))
         registerSensor()
-
-        // Register battery receiver
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+
+        // Start Telegram command polling
+        handler.post(pollRunnable)
+
+        // Start periodic location sending if configured
+        startLocationUpdates(prefs)
 
         return START_STICKY
     }
@@ -104,6 +117,22 @@ class LockService : Service() {
 
     private fun unregisterSensor() {
         sensorManager.unregisterListener(shakeDetector)
+    }
+
+    private fun startLocationUpdates(prefs: android.content.SharedPreferences) {
+        locationRunnable?.let { handler.removeCallbacks(it) }
+
+        val intervalMinutes = prefs.getInt(TelegramBot.KEY_LOCATION_INTERVAL, 0)
+        if (intervalMinutes <= 0 || !telegramBot.isConfigured()) return
+
+        val intervalMs = intervalMinutes * 60_000L
+        locationRunnable = object : Runnable {
+            override fun run() {
+                telegramBot.sendLocation()
+                handler.postDelayed(this, intervalMs)
+            }
+        }
+        handler.postDelayed(locationRunnable!!, intervalMs)
     }
 
     private fun buildNotification(hideIcon: Boolean): Notification {

@@ -93,6 +93,8 @@ class SettingsFragment : Fragment() {
     private val panicDurationLabels = listOf("10s", "30s", "1m", "2m", "5m")
     private val batterySteps = listOf(0, 5, 10, 15, 20, 25, 30)
     private val batteryLabels = listOf("Off", "5%", "10%", "15%", "20%", "25%", "30%")
+    private val locationIntervalSteps = listOf(0, 1, 2, 5, 10)
+    private val locationIntervalLabels = listOf("Off", "1 min", "2 min", "5 min", "10 min")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -110,6 +112,7 @@ class SettingsFragment : Fragment() {
         setupPanicAlarmSection(view)
         setupNotificationSection(view)
         setupBatterySection(view)
+        setupTelegramSection(view)
         setupAboutButton(view)
     }
 
@@ -276,27 +279,118 @@ class SettingsFragment : Fragment() {
         })
     }
 
+    private fun setupTelegramSection(view: View) {
+        val switchTelegram = view.findViewById<Switch>(R.id.switchTelegram)
+        val layoutConfig = view.findViewById<View>(R.id.layoutTelegramConfig)
+        val etBotToken = view.findViewById<EditText>(R.id.etBotToken)
+        val etChatId = view.findViewById<EditText>(R.id.etChatId)
+        val seekBarInterval = view.findViewById<SeekBar>(R.id.seekBarLocationInterval)
+        val tvInterval = view.findViewById<TextView>(R.id.tvLocationInterval)
+        val btnTest = view.findViewById<Button>(R.id.btnTestTelegram)
+
+        val savedEnabled = prefs.getBoolean(TelegramBot.KEY_TELEGRAM_ENABLED, false)
+        val savedProgress = prefs.getInt("location_interval_progress", 0)
+
+        switchTelegram.isChecked = savedEnabled
+        layoutConfig.visibility = if (savedEnabled) View.VISIBLE else View.GONE
+        etBotToken.setText(prefs.getString(TelegramBot.KEY_BOT_TOKEN, ""))
+        etChatId.setText(prefs.getString(TelegramBot.KEY_CHAT_ID, ""))
+        seekBarInterval.progress = savedProgress
+        tvInterval.text = locationIntervalLabels[savedProgress]
+
+        switchTelegram.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean(TelegramBot.KEY_TELEGRAM_ENABLED, isChecked).apply()
+            layoutConfig.visibility = if (isChecked) View.VISIBLE else View.GONE
+            if (isChecked) saveTelegramFields(etBotToken, etChatId)
+            restartServiceIfRunning()
+        }
+
+        etBotToken.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) saveTelegramFields(etBotToken, etChatId)
+        }
+
+        etChatId.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) saveTelegramFields(etBotToken, etChatId)
+        }
+
+        seekBarInterval.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                tvInterval.text = locationIntervalLabels[progress]
+                prefs.edit()
+                    .putInt("location_interval_progress", progress)
+                    .putInt(TelegramBot.KEY_LOCATION_INTERVAL, locationIntervalSteps[progress])
+                    .apply()
+                restartServiceIfRunning()
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        btnTest.setOnClickListener {
+            saveTelegramFields(etBotToken, etChatId)
+            btnTest.isEnabled = false
+            btnTest.text = "Testing..."
+            Thread {
+                val ok = TelegramBot(requireContext()).testConnection()
+                requireActivity().runOnUiThread {
+                    btnTest.isEnabled = true
+                    btnTest.text = "Test Connection"
+                    if (ok) {
+                        TelegramBot(requireContext()).sendMessage("✅ PanicLock connected successfully!")
+                        Toast.makeText(requireContext(),
+                            "✓ Connected! Check your Telegram.", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(),
+                            "✗ Connection failed. Check token and chat ID.", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }.start()
+        }
+    }
+
+    private fun saveTelegramFields(etBotToken: EditText, etChatId: EditText) {
+        prefs.edit()
+            .putString(TelegramBot.KEY_BOT_TOKEN, etBotToken.text.toString().trim())
+            .putString(TelegramBot.KEY_CHAT_ID, etChatId.text.toString().trim())
+            .apply()
+    }
+
     private fun setupAboutButton(view: View) {
         view.findViewById<Button>(R.id.btnAbout).setOnClickListener {
             AlertDialog.Builder(requireContext())
                 .setTitle("About PanicLock")
                 .setMessage(
                     "PanicLock protects your device by locking it instantly when a shake is detected.\n\n" +
-                            "HOW TO USE\n" +
-                            "1. Enable Shake Detection with the master toggle.\n" +
-                            "2. Adjust sensitivity to match your needs — start at Medium and tune from there.\n" +
-                            "3. Choose what happens on trigger: lock screen, silent mode, GPS, mobile data, app kill list, or panic alarm.\n" +
-                            "4. The app runs silently in the background and auto-starts after reboot.\n\n" +
-                            "ROOT REQUIRED\n" +
-                            "PanicLock requires root access to lock the screen and execute system-level actions. " +
-                            "When prompted by your root manager (e.g. Magisk), please grant access.\n\n" +
-                            "BATTERY\n" +
-                            "The service is optimized for minimal battery use. " +
-                            "You can set an auto-stop threshold under the Battery section.\n\n" +
-                            "─────────────────────\n" +
-                            "Developed by Svetoslav Izov\n" +
-                            "with great help from Claude\n" +
-                            "─────────────────────"
+                    "HOW TO USE\n" +
+                    "1. Enable Shake Detection with the master toggle.\n" +
+                    "2. Adjust sensitivity to match your needs — start at Medium and tune from there.\n" +
+                    "3. Choose what happens on trigger: lock screen, silent mode, GPS, mobile data, app kill list, or panic alarm.\n" +
+                    "4. The app runs silently in the background and auto-starts after reboot.\n\n" +
+                    "TELEGRAM BOT\n" +
+                    "1. Open Telegram → search @BotFather\n" +
+                    "2. Send /newbot → follow prompts → copy the token\n" +
+                    "3. Start a chat with your new bot\n" +
+                    "4. Visit: api.telegram.org/bot<TOKEN>/getUpdates\n" +
+                    "5. Send any message to your bot, refresh the URL\n" +
+                    "6. Find chat id in the response and copy it\n" +
+                    "7. Paste both into the Telegram section and tap Test\n\n" +
+                    "COMMANDS\n" +
+                    "/locate — current GPS location\n" +
+                    "/lock — lock the screen remotely\n" +
+                    "/alarm — trigger panic alarm\n" +
+                    "/silent — enable silent mode\n" +
+                    "/status — battery and location\n" +
+                    "/help — show all commands\n\n" +
+                    "ROOT REQUIRED\n" +
+                    "PanicLock requires root access to lock the screen and execute system-level actions. " +
+                    "When prompted by your root manager (e.g. Magisk), please grant access.\n\n" +
+                    "BATTERY\n" +
+                    "The service is optimized for minimal battery use. " +
+                    "You can set an auto-stop threshold under the Battery section.\n\n" +
+                    "─────────────────────\n" +
+                    "Developed by Svetoslav Izov\n" +
+                    "with great help from Claude\n" +
+                    "─────────────────────"
                 )
                 .setPositiveButton("Close", null)
                 .show()
@@ -362,7 +456,6 @@ class LogFragment : Fragment() {
             val timestamp = entry.getString("time")
             val actions = entry.getJSONArray("actions")
 
-            // Card container
             val card = LinearLayout(requireContext()).apply {
                 orientation = LinearLayout.VERTICAL
                 setBackgroundColor(Color.parseColor("#161B22"))
@@ -375,7 +468,6 @@ class LogFragment : Fragment() {
                 layoutParams = params
             }
 
-            // Timestamp
             val tvTime = TextView(requireContext()).apply {
                 text = timestamp
                 setTextColor(Color.WHITE)
@@ -383,7 +475,6 @@ class LogFragment : Fragment() {
             }
             card.addView(tvTime)
 
-            // Actions
             for (j in 0 until actions.length()) {
                 val tvAction = TextView(requireContext()).apply {
                     text = "└ ${actions.getString(j)}"

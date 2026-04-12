@@ -512,6 +512,169 @@
 
         </LinearLayout>
 
+        <!-- Telegram Bot -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TELEGRAM BOT"
+            android:textColor="#8B949E"
+            android:textSize="12sp"
+            android:letterSpacing="0.1"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#161B22"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Enable Telegram Bot"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"/>
+
+                <Switch
+                    android:id="@+id/switchTelegram"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutTelegramConfig"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="12dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Bot Token"
+                    android:textColor="#8B949E"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="4dp"/>
+
+                <EditText
+                    android:id="@+id/etBotToken"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="123456789:ABCdef..."
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#3A3F47"
+                    android:background="#0D1117"
+                    android:padding="12dp"
+                    android:inputType="text"
+                    android:singleLine="true"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Chat ID"
+                    android:textColor="#8B949E"
+                    android:textSize="12sp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="4dp"/>
+
+                <EditText
+                    android:id="@+id/etChatId"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="123456789"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#3A3F47"
+                    android:background="#0D1117"
+                    android:padding="12dp"
+                    android:inputType="number"
+                    android:singleLine="true"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Location Update Interval"
+                    android:textColor="#8B949E"
+                    android:textSize="12sp"
+                    android:layout_marginTop="12dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="4dp">
+
+                    <TextView
+                        android:id="@+id/tvLocationInterval"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Off"
+                        android:textColor="#00D4FF"
+                        android:textSize="14sp"/>
+
+                    <SeekBar
+                        android:id="@+id/seekBarLocationInterval"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:max="4"
+                        android:progress="0"
+                        android:progressTint="#00D4FF"
+                        android:thumbTint="#00D4FF"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="2dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Off"
+                        android:textColor="#3A3F47"
+                        android:textSize="11sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="10 min"
+                        android:textColor="#3A3F47"
+                        android:textSize="11sp"/>
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnTestTelegram"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Test Connection"
+                    android:backgroundTint="#0D1117"
+                    android:textColor="#00D4FF"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
         <!-- About -->
         <Button
             android:id="@+id/btnAbout"

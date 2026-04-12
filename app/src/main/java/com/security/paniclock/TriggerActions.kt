@@ -30,8 +30,6 @@ class TriggerActions(private val context: Context) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     private var mediaPlayer: MediaPlayer? = null
-
-    // Handler created only when panic alarm is active
     private var panicHandler: Handler? = null
     private var strobeRunnable: Runnable? = null
 
@@ -66,7 +64,27 @@ class TriggerActions(private val context: Context) {
         }
 
         writeLogEntry(actions)
+
+        // Send Telegram alert
+        TelegramBot(context).sendTriggerAlert(actions)
     }
+
+    // --- Remote commands from Telegram ---
+
+    fun remoteLock() {
+        lockScreen()
+    }
+
+    fun remotePanicAlarm() {
+        startPanicAlarm()
+    }
+
+    fun remoteSilent() {
+        enableSilentMode()
+    }
+
+    // --- Log ---
+
     private fun writeLogEntry(actions: List<String>) {
         try {
             val timestamp = java.text.SimpleDateFormat(
@@ -82,7 +100,6 @@ class TriggerActions(private val context: Context) {
             val existing = prefs.getString("trigger_log", "[]") ?: "[]"
             val log = org.json.JSONArray(existing)
 
-            // Insert at beginning
             val newLog = org.json.JSONArray()
             newLog.put(entry)
             for (i in 0 until minOf(log.length(), 9)) {
@@ -98,6 +115,8 @@ class TriggerActions(private val context: Context) {
     fun clearLog() {
         prefs.edit().putString("trigger_log", "[]").apply()
     }
+
+    // --- Actions ---
 
     private fun lockScreen() {
         executeRootCommand("input keyevent 26")
@@ -119,7 +138,7 @@ class TriggerActions(private val context: Context) {
         executeRootCommand("svc data enable")
     }
 
-    private fun enableSilentMode() {
+    fun enableSilentMode() {
         try {
             val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
@@ -140,7 +159,6 @@ class TriggerActions(private val context: Context) {
     private fun startPanicAlarm() {
         val durationMs = (prefs.getInt(KEY_PANIC_ALARM_DURATION, 30) * 1000).toLong()
 
-        // Max alarm volume
         try {
             val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             audioManager.setStreamVolume(
@@ -152,7 +170,6 @@ class TriggerActions(private val context: Context) {
             Log.e("PanicLock", "Volume set failed: ${e.message}")
         }
 
-        // Play alarm on loop
         try {
             val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             mediaPlayer = MediaPlayer().apply {
@@ -171,7 +188,6 @@ class TriggerActions(private val context: Context) {
             Log.e("PanicLock", "Alarm sound failed: ${e.message}")
         }
 
-        // Strobe flashlight — handler created fresh here only
         try {
             val cameraManager =
                 context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
@@ -190,7 +206,6 @@ class TriggerActions(private val context: Context) {
             Log.e("PanicLock", "Strobe failed: ${e.message}")
         }
 
-        // Stop after duration
         panicHandler?.postDelayed({ stopPanicAlarm() }, durationMs)
     }
 
