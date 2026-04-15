@@ -27,19 +27,23 @@ A rooted Android security app that instantly locks your device when shaken — w
 
 ## Telegram Bot Integration
 
-PanicLock can connect to a Telegram bot for two-way communication:
+PanicLock connects to a Telegram bot for two-way communication.
 
 **Phone → Telegram:**
 - Sends an alert with location and battery level when shake is detected
 - Sends periodic location updates at a configurable interval (1, 2, 5, or 10 minutes)
 
 **Telegram → Phone (remote commands):**
+
 | Command | Action |
 |---------|--------|
 | `/locate` | Returns current GPS location as a Maps link |
 | `/lock` | Locks the screen remotely |
 | `/alarm` | Triggers the panic alarm (strobe + sound) |
 | `/silent` | Enables silent mode |
+| `/gps` | Enables GPS |
+| `/data` | Enables mobile data |
+| `/photo` | Takes a front camera photo and sends it |
 | `/status` | Returns battery %, location, and service status |
 | `/help` | Lists all available commands |
 
@@ -47,10 +51,9 @@ PanicLock can connect to a Telegram bot for two-way communication:
 
 1. Open Telegram → message **@BotFather** → send `/newbot` → follow prompts → copy the token
 2. Start a chat with your new bot and send it any message
-3. Visit `https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates` in a browser
-4. Find `"chat":{"id": YOUR_CHAT_ID}` in the response and copy that number
-5. Open PanicLock → scroll to **Telegram Bot** section → paste token and chat ID
-6. Tap **Test Connection** — you should receive a confirmation message in Telegram
+3. To get your Chat ID, message **@userinfobot** on Telegram — it replies instantly with your ID
+4. Open PanicLock → scroll to **Telegram Bot** section → paste token and chat ID
+5. Tap **Test Connection** — you should receive a confirmation message in Telegram
 
 ## Requirements
 

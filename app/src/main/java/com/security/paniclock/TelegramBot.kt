@@ -2,14 +2,25 @@ package com.security.paniclock
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.ImageFormat
+import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraDevice
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureRequest
 import android.location.Location
 import android.location.LocationManager
+import android.media.ImageReader
 import android.os.BatteryManager
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Handler
+import android.os.HandlerThread
 import android.util.Log
 import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.ByteArrayOutputStream
+import java.io.DataOutputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
@@ -95,7 +106,6 @@ class TelegramBot(private val context: Context) {
                     val chatId = message.getJSONObject("chat").getLong("id").toString()
                     val savedChatId = prefs.getString(KEY_CHAT_ID, "") ?: ""
 
-                    // Only respond to the configured chat ID
                     if (chatId != savedChatId) continue
 
                     val text = message.getString("text").trim().lowercase()
@@ -126,6 +136,21 @@ class TelegramBot(private val context: Context) {
                 triggerActions.remoteSilent()
             }
 
+            "/gps" -> {
+                sendMessage("📡 Enabling GPS...")
+                triggerActions.remoteGps()
+            }
+
+            "/data" -> {
+                sendMessage("📶 Enabling mobile data...")
+                triggerActions.remoteMobileData()
+            }
+
+            "/photo" -> {
+                sendMessage("📷 Taking photo...")
+                takePhotoAndSend()
+            }
+
             "/status" -> {
                 val battery = getBatteryPercent()
                 val location = getLastKnownLocation()
@@ -142,14 +167,150 @@ class TelegramBot(private val context: Context) {
             "/help" -> {
                 sendMessage(
                     "🛡 *PanicLock Commands*\n\n" +
-                    "/locate — get current location\n" +
+                    "/locate — current GPS location\n" +
                     "/lock — lock the screen\n" +
                     "/alarm — trigger panic alarm\n" +
                     "/silent — enable silent mode\n" +
+                    "/gps — enable GPS\n" +
+                    "/data — enable mobile data\n" +
+                    "/photo — take a photo\n" +
                     "/status — battery, location, status\n" +
                     "/help — show this message"
                 )
             }
+        }
+    }
+
+    // --- Photo capture ---
+
+    private fun takePhotoAndSend() {
+        val handlerThread = HandlerThread("CameraThread").also { it.start() }
+        val cameraHandler = Handler(handlerThread.looper)
+
+        try {
+            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+            // Try front camera first, fall back to back
+            val cameraId = cameraManager.cameraIdList.firstOrNull { id ->
+                cameraManager.getCameraCharacteristics(id)
+                    .get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
+            } ?: cameraManager.cameraIdList.firstOrNull() ?: run {
+                sendMessage("❌ No camera available.")
+                handlerThread.quitSafely()
+                return
+            }
+
+            val imageReader = ImageReader.newInstance(640, 480, ImageFormat.JPEG, 1)
+
+            cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
+                override fun onOpened(camera: CameraDevice) {
+                    val captureRequest = camera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE).apply {
+                        addTarget(imageReader.surface)
+                        set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
+                        set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF)
+                    }.build()
+
+                    camera.createCaptureSession(
+                        listOf(imageReader.surface),
+                        object : CameraCaptureSession.StateCallback() {
+                            override fun onConfigured(session: CameraCaptureSession) {
+                                session.capture(captureRequest, object : CameraCaptureSession.CaptureCallback() {
+                                    override fun onCaptureCompleted(
+                                        session: CameraCaptureSession,
+                                        request: CaptureRequest,
+                                        result: android.hardware.camera2.TotalCaptureResult
+                                    ) {
+                                        val image = imageReader.acquireLatestImage()
+                                        if (image != null) {
+                                            val buffer = image.planes[0].buffer
+                                            val bytes = ByteArray(buffer.remaining())
+                                            buffer.get(bytes)
+                                            image.close()
+                                            camera.close()
+                                            handlerThread.quitSafely()
+                                            sendPhoto(bytes)
+                                        } else {
+                                            camera.close()
+                                            handlerThread.quitSafely()
+                                            sendMessage("❌ Failed to capture image.")
+                                        }
+                                    }
+                                }, cameraHandler)
+                            }
+
+                            override fun onConfigureFailed(session: CameraCaptureSession) {
+                                camera.close()
+                                handlerThread.quitSafely()
+                                sendMessage("❌ Camera session failed.")
+                            }
+                        },
+                        cameraHandler
+                    )
+                }
+
+                override fun onDisconnected(camera: CameraDevice) {
+                    camera.close()
+                    handlerThread.quitSafely()
+                }
+
+                override fun onError(camera: CameraDevice, error: Int) {
+                    camera.close()
+                    handlerThread.quitSafely()
+                    sendMessage("❌ Camera error: $error")
+                }
+            }, cameraHandler)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Photo capture failed: ${e.message}")
+            sendMessage("❌ Photo failed: ${e.message}")
+            handlerThread.quitSafely()
+        }
+    }
+
+    private fun sendPhoto(imageBytes: ByteArray) {
+        try {
+            val token = prefs.getString(KEY_BOT_TOKEN, "") ?: return
+            val chatId = prefs.getString(KEY_CHAT_ID, "") ?: return
+            if (token.isEmpty() || chatId.isEmpty()) return
+
+            val boundary = "----PanicLockBoundary"
+            val url = URL("https://api.telegram.org/bot$token/sendPhoto")
+            val conn = url.openConnection() as HttpURLConnection
+            conn.requestMethod = "POST"
+            conn.doOutput = true
+            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+            conn.connectTimeout = 30000
+            conn.readTimeout = 30000
+
+            val out = DataOutputStream(conn.outputStream)
+
+            // chat_id field
+            out.writeBytes("--$boundary\r\n")
+            out.writeBytes("Content-Disposition: form-data; name=\"chat_id\"\r\n\r\n")
+            out.writeBytes("$chatId\r\n")
+
+            // caption field
+            out.writeBytes("--$boundary\r\n")
+            out.writeBytes("Content-Disposition: form-data; name=\"caption\"\r\n\r\n")
+            out.writeBytes("📷 PanicLock photo\r\n")
+
+            // photo file
+            out.writeBytes("--$boundary\r\n")
+            out.writeBytes("Content-Disposition: form-data; name=\"photo\"; filename=\"photo.jpg\"\r\n")
+            out.writeBytes("Content-Type: image/jpeg\r\n\r\n")
+            out.write(imageBytes)
+            out.writeBytes("\r\n--$boundary--\r\n")
+            out.flush()
+            out.close()
+
+            val responseCode = conn.responseCode
+            conn.disconnect()
+
+            if (responseCode != 200) {
+                sendMessage("❌ Photo upload failed (HTTP $responseCode)")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Send photo failed: ${e.message}")
         }
     }
 

@@ -79,8 +79,25 @@ class TriggerActions(private val context: Context) {
         startPanicAlarm()
     }
 
+    fun enableSilentMode() {
+        try {
+            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+        } catch (e: Exception) {
+            Log.e("PanicLock", "Silent mode failed: ${e.message}")
+        }
+    }
+
     fun remoteSilent() {
         enableSilentMode()
+    }
+
+    fun remoteGps() {
+        enableGps()
+    }
+
+    fun remoteMobileData() {
+        enableMobileData()
     }
 
     // --- Log ---
@@ -136,15 +153,6 @@ class TriggerActions(private val context: Context) {
 
     private fun enableMobileData() {
         executeRootCommand("svc data enable")
-    }
-
-    fun enableSilentMode() {
-        try {
-            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
-        } catch (e: Exception) {
-            Log.e("PanicLock", "Silent mode failed: ${e.message}")
-        }
     }
 
     private fun killApps() {
