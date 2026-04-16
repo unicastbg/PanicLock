@@ -43,7 +43,6 @@ PanicLock connects to a Telegram bot for two-way communication.
 | `/silent` | Enables silent mode |
 | `/gps` | Enables GPS |
 | `/data` | Enables mobile data |
-| `/photo` | Takes a front camera photo and sends it |
 | `/status` | Returns battery %, location, and service status |
 | `/help` | Lists all available commands |
 

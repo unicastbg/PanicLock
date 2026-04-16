@@ -49,15 +49,15 @@ jobs:
         with:
           files: app/build/outputs/apk/debug/app-debug.apk
           name: PanicLock ${{ github.ref_name }}
+          generate_release_notes: true
           body: |
-            ## PanicLock ${{ github.ref_name }}
-
             ### Installation
             1. Download `app-debug.apk` below
             2. Enable "Install from unknown sources" on your device
-            3. Install the APK
-            4. Grant root access when prompted
+            3. Install the APK and grant root access when prompted
 
             ### Requirements
             - Rooted Android device (KernelSU or Magisk)
             - Android 8.0+
+
+            ---
