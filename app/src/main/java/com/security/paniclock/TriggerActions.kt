@@ -96,6 +96,21 @@ class TriggerActions(private val context: Context) {
         enableGps()
     }
 
+    fun isGpsEnabled(): Boolean {
+        return try {
+            val locationManager =
+                context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        } catch (e: Exception) {
+            Log.e("PanicLock", "GPS state check failed: ${e.message}")
+            false
+        }
+    }
+
+    fun remoteDisableGps() {
+        disableGps()
+    }
+
     fun remoteMobileData() {
         enableMobileData()
     }
@@ -149,6 +164,10 @@ class TriggerActions(private val context: Context) {
         } catch (e: Exception) {
             Log.e("PanicLock", "GPS enable failed: ${e.message}")
         }
+    }
+
+    private fun disableGps() {
+        executeRootCommand("settings put secure location_mode 0")
     }
 
     private fun enableMobileData() {

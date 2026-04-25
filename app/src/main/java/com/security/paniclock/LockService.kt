@@ -11,8 +11,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorManager
-import android.os.IBinder
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
 
@@ -24,15 +24,6 @@ class LockService : Service() {
     private lateinit var telegramBot: TelegramBot
     private val handler = Handler(Looper.getMainLooper())
     private var accelerometer: Sensor? = null
-
-    // Telegram polling — every 30 seconds
-    private val pollIntervalMs = 30_000L
-    private val pollRunnable = object : Runnable {
-        override fun run() {
-            telegramBot.pollCommands(triggerActions)
-            handler.postDelayed(this, pollIntervalMs)
-        }
-    }
 
     // Periodic location sending
     private var locationRunnable: Runnable? = null
@@ -90,8 +81,8 @@ class LockService : Service() {
         registerSensor()
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
 
-        // Start Telegram command polling
-        handler.post(pollRunnable)
+        // Keep a long-polling connection open so commands arrive quickly.
+        telegramBot.startPolling(triggerActions)
 
         // Start periodic location sending if configured
         startLocationUpdates(prefs)
@@ -102,8 +93,9 @@ class LockService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterSensor()
-        try { unregisterReceiver(batteryReceiver) } catch (e: Exception) {}
+        try { unregisterReceiver(batteryReceiver) } catch (_: Exception) {}
         triggerActions.stopPanicAlarm()
+        telegramBot.stopPolling()
         handler.removeCallbacksAndMessages(null)
     }
 

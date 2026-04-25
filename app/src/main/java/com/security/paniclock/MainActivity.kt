@@ -1,17 +1,22 @@
 package com.security.paniclock
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
@@ -40,6 +45,56 @@ class MainActivity : AppCompatActivity() {
         }.attach()
 
         checkRootAccess()
+        ensureLocationPermissions()
+    }
+
+    private fun ensureLocationPermissions() {
+        val missingForegroundLocation =
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED
+
+        if (missingForegroundLocation) {
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                REQUEST_LOCATION_PERMISSION
+            )
+            return
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val missingBackgroundLocation =
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) !=
+                    PackageManager.PERMISSION_GRANTED
+
+            if (missingBackgroundLocation) {
+                AlertDialog.Builder(this)
+                    .setTitle("Allow Background Location")
+                    .setMessage("For Telegram /locate to work after GPS is enabled remotely, set PanicLock location permission to Allow all the time.")
+                    .setPositiveButton("Open Settings") { _, _ ->
+                        val intent = Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", packageName, null)
+                        )
+                        startActivity(intent)
+                    }
+                    .setNegativeButton("Later", null)
+                    .show()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            ensureLocationPermissions()
+        }
     }
 
     private fun checkRootAccess() {
@@ -67,6 +122,10 @@ class MainActivity : AppCompatActivity() {
             .setMessage("PanicLock requires root access to lock the screen and execute trigger actions. Please make sure your device is rooted and has granted root permission to this app.")
             .setPositiveButton("OK", null)
             .show()
+    }
+
+    companion object {
+        private const val REQUEST_LOCATION_PERMISSION = 1001
     }
 }
 
