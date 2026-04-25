@@ -38,10 +38,11 @@ PanicLock connects to a Telegram bot for two-way communication.
 | Command | Action |
 |---------|--------|
 | `/locate` | Returns current GPS location as a Maps link |
+| `/ping` | Enables GPS if off, gets location, sends it, then restores GPS state |
 | `/lock` | Locks the screen remotely |
 | `/alarm` | Triggers the panic alarm (strobe + sound) |
 | `/silent` | Enables silent mode |
-| `/gps` | Enables GPS |
+| `/gps` | Enables GPS permanently |
 | `/data` | Enables mobile data |
 | `/status` | Returns battery %, location, and service status |
 | `/help` | Lists all available commands |
