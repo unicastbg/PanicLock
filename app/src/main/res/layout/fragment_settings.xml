@@ -531,6 +531,7 @@
             android:padding="16dp"
             android:layout_marginBottom="12dp">
 
+            <!-- Enable toggle -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -555,6 +556,37 @@
 
             </LinearLayout>
 
+            <!-- Collapsed summary — shown when credentials are saved -->
+            <LinearLayout
+                android:id="@+id/layoutTelegramSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="12dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvTelegramSummary"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Bot configured ✓"
+                    android:textColor="#00D4FF"
+                    android:textSize="13sp"/>
+
+                <Button
+                    android:id="@+id/btnEditTelegram"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Edit"
+                    android:backgroundTint="#0D1117"
+                    android:textColor="#00D4FF"
+                    android:textSize="12sp"/>
+
+            </LinearLayout>
+
+            <!-- Full config — shown when editing or not yet configured -->
             <LinearLayout
                 android:id="@+id/layoutTelegramConfig"
                 android:layout_width="match_parent"
@@ -604,13 +636,32 @@
                     android:inputType="number"
                     android:singleLine="true"/>
 
+                <Button
+                    android:id="@+id/btnTestTelegram"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Save &amp; Test Connection"
+                    android:backgroundTint="#0D1117"
+                    android:textColor="#00D4FF"/>
+
+            </LinearLayout>
+
+            <!-- Location interval — always visible when Telegram enabled -->
+            <LinearLayout
+                android:id="@+id/layoutLocationInterval"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="16dp"
+                android:visibility="gone">
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Location Update Interval"
                     android:textColor="#8B949E"
-                    android:textSize="12sp"
-                    android:layout_marginTop="12dp"/>
+                    android:textSize="12sp"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -632,7 +683,7 @@
                         android:id="@+id/seekBarLocationInterval"
                         android:layout_width="200dp"
                         android:layout_height="wrap_content"
-                        android:max="4"
+                        android:max="6"
                         android:progress="0"
                         android:progressTint="#00D4FF"
                         android:thumbTint="#00D4FF"/>
@@ -656,20 +707,11 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="10 min"
+                        android:text="1 hour"
                         android:textColor="#3A3F47"
                         android:textSize="11sp"/>
 
                 </LinearLayout>
-
-                <Button
-                    android:id="@+id/btnTestTelegram"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Test Connection"
-                    android:backgroundTint="#0D1117"
-                    android:textColor="#00D4FF"/>
 
             </LinearLayout>
 

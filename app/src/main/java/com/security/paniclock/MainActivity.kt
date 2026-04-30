@@ -152,8 +152,8 @@ class SettingsFragment : Fragment() {
     private val panicDurationLabels = listOf("10s", "30s", "1m", "2m", "5m")
     private val batterySteps = listOf(0, 5, 10, 15, 20, 25, 30)
     private val batteryLabels = listOf("Off", "5%", "10%", "15%", "20%", "25%", "30%")
-    private val locationIntervalSteps = listOf(0, 1, 2, 5, 10)
-    private val locationIntervalLabels = listOf("Off", "1 min", "2 min", "5 min", "10 min")
+    private val locationIntervalSteps = listOf(0, 1, 2, 5, 10, 30, 60)
+    private val locationIntervalLabels = listOf("Off", "1 min", "2 min", "5 min", "10 min", "30 min", "1 hour")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -340,7 +340,11 @@ class SettingsFragment : Fragment() {
 
     private fun setupTelegramSection(view: View) {
         val switchTelegram = view.findViewById<Switch>(R.id.switchTelegram)
+        val layoutSummary = view.findViewById<View>(R.id.layoutTelegramSummary)
+        val tvSummary = view.findViewById<TextView>(R.id.tvTelegramSummary)
+        val btnEdit = view.findViewById<Button>(R.id.btnEditTelegram)
         val layoutConfig = view.findViewById<View>(R.id.layoutTelegramConfig)
+        val layoutInterval = view.findViewById<View>(R.id.layoutLocationInterval)
         val etBotToken = view.findViewById<EditText>(R.id.etBotToken)
         val etChatId = view.findViewById<EditText>(R.id.etChatId)
         val seekBarInterval = view.findViewById<SeekBar>(R.id.seekBarLocationInterval)
@@ -348,20 +352,33 @@ class SettingsFragment : Fragment() {
         val btnTest = view.findViewById<Button>(R.id.btnTestTelegram)
 
         val savedEnabled = prefs.getBoolean(TelegramBot.KEY_TELEGRAM_ENABLED, false)
+        val savedToken = prefs.getString(TelegramBot.KEY_BOT_TOKEN, "") ?: ""
+        val savedChatId = prefs.getString(TelegramBot.KEY_CHAT_ID, "") ?: ""
         val savedProgress = prefs.getInt("location_interval_progress", 0)
 
         switchTelegram.isChecked = savedEnabled
-        layoutConfig.visibility = if (savedEnabled) View.VISIBLE else View.GONE
-        etBotToken.setText(prefs.getString(TelegramBot.KEY_BOT_TOKEN, ""))
-        etChatId.setText(prefs.getString(TelegramBot.KEY_CHAT_ID, ""))
+        etBotToken.setText(savedToken)
+        etChatId.setText(savedChatId)
         seekBarInterval.progress = savedProgress
         tvInterval.text = locationIntervalLabels[savedProgress]
 
+        // Show correct state on load
+        updateTelegramVisibility(savedEnabled, savedToken, savedChatId,
+            layoutSummary, tvSummary, layoutConfig, layoutInterval)
+
         switchTelegram.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean(TelegramBot.KEY_TELEGRAM_ENABLED, isChecked).apply()
-            layoutConfig.visibility = if (isChecked) View.VISIBLE else View.GONE
-            if (isChecked) saveTelegramFields(etBotToken, etChatId)
+            val token = etBotToken.text.toString().trim()
+            val chatId = etChatId.text.toString().trim()
+            updateTelegramVisibility(isChecked, token, chatId,
+                layoutSummary, tvSummary, layoutConfig, layoutInterval)
             restartServiceIfRunning()
+        }
+
+        // Edit button expands config again
+        btnEdit.setOnClickListener {
+            layoutSummary.visibility = View.GONE
+            layoutConfig.visibility = View.VISIBLE
         }
 
         etBotToken.setOnFocusChangeListener { _, hasFocus ->
@@ -393,17 +410,54 @@ class SettingsFragment : Fragment() {
                 val ok = TelegramBot(requireContext()).testConnection()
                 requireActivity().runOnUiThread {
                     btnTest.isEnabled = true
-                    btnTest.text = "Test Connection"
+                    btnTest.text = "Save & Test Connection"
                     if (ok) {
                         TelegramBot(requireContext()).sendMessage("✅ PanicLock connected successfully!")
                         Toast.makeText(requireContext(),
                             "✓ Connected! Check your Telegram.", Toast.LENGTH_SHORT).show()
+                        // Collapse to summary after successful test
+                        val token = etBotToken.text.toString().trim()
+                        val chatId = etChatId.text.toString().trim()
+                        updateTelegramVisibility(true, token, chatId,
+                            layoutSummary, tvSummary, layoutConfig, layoutInterval)
                     } else {
                         Toast.makeText(requireContext(),
                             "✗ Connection failed. Check token and chat ID.", Toast.LENGTH_LONG).show()
                     }
                 }
             }.start()
+        }
+    }
+
+    private fun updateTelegramVisibility(
+        enabled: Boolean,
+        token: String,
+        chatId: String,
+        layoutSummary: View,
+        tvSummary: TextView,
+        layoutConfig: View,
+        layoutInterval: View
+    ) {
+        if (!enabled) {
+            layoutSummary.visibility = View.GONE
+            layoutConfig.visibility = View.GONE
+            layoutInterval.visibility = View.GONE
+            return
+        }
+
+        layoutInterval.visibility = View.VISIBLE
+
+        val isConfigured = token.isNotEmpty() && chatId.isNotEmpty()
+        if (isConfigured) {
+            // Show collapsed summary
+            val maskedToken = if (token.length > 10) token.take(6) + "..." else token
+            tvSummary.text = "Bot configured ✓  (token: $maskedToken)"
+            layoutSummary.visibility = View.VISIBLE
+            layoutConfig.visibility = View.GONE
+        } else {
+            // Show full config for first-time setup
+            layoutSummary.visibility = View.GONE
+            layoutConfig.visibility = View.VISIBLE
         }
     }
 
@@ -428,21 +482,21 @@ class SettingsFragment : Fragment() {
                     "TELEGRAM BOT\n" +
                     "1. Open Telegram → search @BotFather\n" +
                     "2. Send /newbot → follow prompts → copy the token\n" +
-                    "3. Start a chat with your new bot\n" +
-                    "4. Visit: api.telegram.org/bot<TOKEN>/getUpdates\n" +
-                    "5. Send any message to your bot, refresh the URL\n" +
-                    "6. Find chat id in the response and copy it\n" +
-                    "7. Paste both into the Telegram section and tap Test\n\n" +
+                    "3. Get your Chat ID by messaging @userinfobot on Telegram\n" +
+                    "4. Paste both into the Telegram section and tap Save & Test\n\n" +
                     "COMMANDS\n" +
                     "/locate — current GPS location\n" +
+                    "/ping — enable GPS, get location, restore GPS state\n" +
                     "/lock — lock the screen remotely\n" +
                     "/alarm — trigger panic alarm\n" +
                     "/silent — enable silent mode\n" +
+                    "/gps — enable GPS\n" +
+                    "/data — enable mobile data\n" +
                     "/status — battery and location\n" +
                     "/help — show all commands\n\n" +
                     "ROOT REQUIRED\n" +
                     "PanicLock requires root access to lock the screen and execute system-level actions. " +
-                    "When prompted by your root manager (e.g. Magisk), please grant access.\n\n" +
+                    "When prompted by your root manager (e.g. Magisk or KernelSU), please grant access.\n\n" +
                     "BATTERY\n" +
                     "The service is optimized for minimal battery use. " +
                     "You can set an auto-stop threshold under the Battery section.\n\n" +
